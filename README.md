@@ -226,11 +226,15 @@ Docker容器产生的数据，如果不通过docker commit生成新的镜像，�
 
   ![image-20200205200546618](iamges/image-20200205200546618.png)
 
+  ![image-20200205205057987](iamges/image-20200205205057987.png)
+
 + DockerFile添加
 
+  ![image-20200205210116222](iamges/image-20200205210116222.png)
 
+  > docker build -f /mydocker/Dockerfile -t ntuzy/centos
 
-
+![image-20200205210524991](iamges/image-20200205210524991.png)
 
 
 
