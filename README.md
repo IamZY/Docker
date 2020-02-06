@@ -1,4 +1,5 @@
-# Docker
+#  Docker
+
 一款产品从开发到上线，从操作系统，到运行环境，再到应用配置。作为开发+运维之间的协作我们需要关心很多东西，这也是很多互联网公司都不得不面对的问题，特别是各种版本的迭代之后，不同版本环境的兼容，对运维人员都是考验
 Docker之所以发展如此迅速，也是因为它对此给出了一个标准化的解决方案。
 环境配置如此麻烦，换一台机器，就要重来一次，费力费时。很多人想到，能不能从根本上解决问题，软件可以带环境安装？也就是说，安装的时候，把原始环境一模一样地复制过来。开发人员利用 Docker 可以消除协作编码时“在我的机器上可正常工作”的问题。
@@ -236,19 +237,174 @@ Docker容器产生的数据，如果不通过docker commit生成新的镜像，�
 
 ![image-20200205210524991](iamges/image-20200205210524991.png)
 
+### 数据卷容器-容器相互继承
+
+命名的容器挂载数据卷，其它容器通过挂载这个(父容器)实现数据共享，挂载数据卷的容器，称之为数据卷容器
+
+> docker run -it --name dc02 --volumes-from dc01 zzyy/centos
+
+![image-20200206100617522](iamges/image-20200206100617522.png)
+
+## DockerFile
+
+Dockerfile是用来构建Docker镜像的构建文件，是由一系列命令和参数构成的脚本。
+
++ 编写DockerFile文件
++ docker build
++ docker run
+
+```shell
+FROM scratch
+MAINTAINER The CentOS Project <cloud-ops@centos.org>
+ADD c68-docker.tar.xz /
+LABEL name="CentOS Base Image" \
+    vendor="CentOS" \
+    license="GPLv2" \
+    build-date="2016-06-02"
+
+# Default command
+CMD ["/bin/bash"]
+```
+
+### 基础内容
+
++ 每条保留字指令都必须为大写字母且后面要跟随至少一个参数
++ 指令按照从上到下，顺序执行
++ #表示注释
++ 每条指令都会创建一个新的镜像层，并对镜像进行提交
+
+### 执行流程
+
++ docker从基础镜像运行一个容器
++ 执行一条指令并对容器作出修改
++ 执行类似docker commit的操作提交一个新的镜像层
++ docker再基于刚提交的镜像运行一个新容器
++ 执行dockerfile中的下一条指令直到所有指令都执行完成
+
+### 保留字
+
+![image-20200206103352798](iamges/image-20200206103352798.png)
+
+### 自定义镜像
+
+> docker build -f Dockerfile -t mycentos:1.3 .
+
+![image-20200206105649902](iamges/image-20200206105649902.png)
+
++ dockerfile
+
+  ```shell
+  FROM centos
+  MAINTAINER zzyy<zzyy167@126.com>
+   
+  ENV MYPATH /usr/local
+  WORKDIR $MYPATH
+   
+  RUN yum -y install vim
+  RUN yum -y install net-tools
+   
+  EXPOSE 80
+   
+  CMD echo $MYPATH
+  CMD echo "success--------------ok"
+  CMD /bin/bash
+  ```
+
+### CMD 与 ENTRYPOINT
+
+说白了就是追加与不追加的关系
+
+cmd 如果在后面继续 执行cmd命令 就会覆盖之前的所有cmd命令
+
+entrypoint 就是在前面的命令后面追加命令 不会覆盖之前的命令
+
+![image-20200206111104641](iamges/image-20200206111104641.png)
+
+### 自建tomcat9镜像
+
++ 创建Dockerfile目录用来存放形成镜像的一些必要文件
+
+  > mkdir mkdir -p /ntuzy/mydockerfile/tomcat9
+
++ 在目录中创建文件
+
++ 将创建镜像需要的文件放到文件夹中
+
+  ![image-20200206145334995](iamges/image-20200206145334995.png)
+
++ 新建Dockerfile
+
+  ```shell
+  FROM         centos
+  MAINTAINER    ntuzy<ntuzy@outlook.com>
+  #把宿主机当前上下文的c.txt拷贝到容器/usr/local/路径下
+  COPY c.txt /usr/local/cincontainer.txt
+  #把java与tomcat添加到容器中
+  ADD jdk-8u171-linux-x64.tar.gz /usr/local/
+  ADD apache-tomcat-9.0.8.tar.gz /usr/local/
+  #安装vim编辑器
+  RUN yum -y install vim
+  #设置工作访问时候的WORKDIR路径，登录落脚点
+  ENV MYPATH /usr/local
+  WORKDIR $MYPATH
+  #配置java与tomcat环境变量
+  ENV JAVA_HOME /usr/local/jdk1.8.0_171
+  ENV CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+  ENV CATALINA_HOME /usr/local/apache-tomcat-9.0.8
+  ENV CATALINA_BASE /usr/local/apache-tomcat-9.0.8
+  ENV PATH $PATH:$JAVA_HOME/bin:$CATALINA_HOME/lib:$CATALINA_HOME/bin
+  #容器运行时监听的端口
+  EXPOSE  8080
+  #启动时运行tomcat
+  # ENTRYPOINT ["/usr/local/apache-tomcat-9.0.8/bin/startup.sh" ]
+  # CMD ["/usr/local/apache-tomcat-9.0.8/bin/catalina.sh","run"]
+  CMD /usr/local/apache-tomcat-9.0.8/bin/startup.sh && tail -F /usr/local/apache-tomcat-9.0.8/bin/logs/catalina.out
+  ```
+
++ 构建(别忘了最后有一个点  **.**  ) 
+
+  > docker build -t ntuzytomcat9 .
+
++ 运行
+
+  映射地址 将容器中的地址映射到本机上webapps和logs
+
+  > docker run -d -p 9080:8080 --name myt9 -v 
+  >
+  > /ntuzy/mydockerfile/tomcat9/test:/usr/local/apache-tomcat-9.0.8/webapps/test -v /ntuzy/mydockerfile/tomcat9/tomcat9logs/:/usr/local/apache-tomcat-9.0.8/logs --privileged=true ntuzytomcat9
+
+## 部署web项目
+
+根据刚才映射，容器中webapps/test(test项目名)转为本机的tomcat9/test
+
+![image-20200206145514132](iamges/image-20200206145514132.png)
 
 
- 
 
++ 测试
 
+  ![image-20200206145653797](iamges/image-20200206145653797.png)
 
+### 阿里云上传本地镜像
 
++ 创建镜像仓库
 
+![image-20200206153224713](iamges/image-20200206153224713.png)
 
+![image-20200206153251913](iamges/image-20200206153251913.png)
 
++ 上传阿里云
 
+```shell
+$ sudo docker login --username=562018301@qq.com registry.cn-hangzhou.aliyuncs.com
+$ sudo docker tag [ImageId] registry.cn-hangzhou.aliyuncs.com/ntuzy/mycentos:[镜像版本号]
+$ sudo docker push registry.cn-hangzhou.aliyuncs.com/ntuzy/mycentos:[镜像版本号]
+```
 
+![image-20200206153859271](iamges/image-20200206153859271.png)
 
+![image-20200206154450544](iamges/image-20200206154450544.png)
 
++ pull
 
-
+  > sudo docker pull registry.cn-hangzhou.aliyuncs.com/ntuzy/mycentos:[镜像版本号]
