@@ -137,6 +137,12 @@ Docker 本身是一个容器运行载体或称之为管理引擎。我们把应�
 
 ![image-20200205105503616](iamges/image-20200205105503616.png)
 
+> docker run --name MyWordPress --link db:mysql -p 8080:80 -d wordpress
+
+> 进入容器中进行交互式操作
+>
+> docker exec -it db /bin./bash
+
 + 新建启动容器命令中的option
 
   ![image-20200205110836344](iamges/image-20200205110836344.png)
