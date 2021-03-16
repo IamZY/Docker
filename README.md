@@ -195,7 +195,21 @@ Docker 本身是一个容器运行载体或称之为管理引擎。我们把应�
 
   > docker attach 容器id
 
-  
+#### 映射端口
+
+> docker run -p容器外端口:容器内端口
+>
+> docker run --rm --name mynginx -d -p81:80 zangyang/nginx:v1.12.2
+
+#### 挂载数据卷
+
+> docker run -d --rm --name nginx_with_baidu -d -p82:80 -v/root/html:/usr/share/nginx/html zangyang/nginx:v1.12.2
+
+#### 传递环境变量
+
+#### 容器内安装软件
+
+
 
 ## Docker镜像
 
@@ -246,11 +260,31 @@ rootfs (root file system) ，在bootfs之上。包含的就是典型 Linux 系�
 *  将运用与运行的环境打包形成容器运行 ，运行可以伴随着容器，但是我们对数据的要求希望是持久化的
 *  容器之间希望有可能共享数据
 
-
 Docker容器产生的数据，如果不通过docker commit生成新的镜像，使得数据做为镜像的一部分保存下来，
 那么当容器删除后，数据自然也就没有了。
 
+> docker commit -p myalpine zangyang0316/alpine:v3.10.3_with_1.txt
+
 为了能保存数据在docker中我们使用卷。
+
+> docker save 67048941be8f > alpine:v3.10.3_with_1.txt.tar
+>
+> docker load < alpine\:v3.10.3_with_1.txt.tar
+>
+> docker tag 67048941be8f zangyang0316/alpine:v3.10.3_with_1.txt
+>
+> docker run --rm -it --name myalpine_with_1.txt zangyang0316/alpine:v3.10.3_with_1.txt /bin/sh
+
+## Docker 容器日志
+
+```shell
+docker run hello-world 2>&1 >>/dev/null
+docker logs 93274cf81432
+
+docker logs -f 93274cf81432
+```
+
+
 
 ### 作用（持久化+数据共享）
 
