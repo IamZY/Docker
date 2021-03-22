@@ -330,8 +330,20 @@ docker logs -f 93274cf81432
 Dockerfile是用来构建Docker镜像的构建文件，是由一系列命令和参数构成的脚本。
 
 + 编写DockerFile文件
+
+  ```shell
+  FROM docker.io/zangyang/nginx:v1.12.2
+  USER nginx
+  WORKDIR /usr/share/nginx/html
+  ```
+
 + docker build
+
+  > docker build . -t docker.io/zangyang/nginx:v1.12.2_with_user_workdir
+
 + docker run
+
+  > docker run --rm -it --name nginx123 docker.io/zangyang/nginx:v1.12.2_with_user_workdir /bin/bash
 
 ```shell
 FROM scratch
@@ -364,6 +376,32 @@ CMD ["/bin/bash"]
 ### 保留字
 
 ![image-20200206103352798](iamges/image-20200206103352798.png)
+
+#### USER/WORKDIR
+
+```shell
+FROM docker.io/zangyang/nginx:v1.12.2
+USER nginx
+WORKDIR /usr/share/nginx/html
+```
+
+#### ADD/EXPOSE
+
+```shell
+FROM docker.io/zangyang/nginx:v1.12.2
+ADD index.html /usr/share/nginx/html/index.html
+EXPOSE 80
+```
+
+#### ENV
+
+```
+FROM centos
+ENV var 9.91
+RUN yum install -y xxx.$var
+```
+
+
 
 ### 自定义镜像
 
