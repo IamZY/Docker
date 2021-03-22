@@ -526,3 +526,45 @@ $ sudo docker push registry.cn-hangzhou.aliyuncs.com/ntuzy/mycentos:[镜像版�
 + pull
 
   > sudo docker pull registry.cn-hangzhou.aliyuncs.com/ntuzy/mycentos:[镜像版本号]
+
+## 四种网络模型
+
+### NAT
+
+### None
+
+不使用网络 并不对外提供网络接口
+
+计算->存储
+
+`--net=none`
+
+### Host
+
+docker和宿主机在同一网络
+
+`--net=host`
+
+### 联合网络
+
+两个容器共享一个网络名称空间
+
+共享文件系统
+
+`--net=container:container_id`
+
+## 存在问题
+
++ 单机使用，无法有效的集群
++ 对着容器数量的上升 管理成本上升
++ 没有有效的容灾机制
++ 没有预设编排模板 无法快速大规模调度
++ 没有统一配置管理中心
++ 没有容器生命周期的管理工具
++ 没有图形化运维管理工具
+
+docker compose docker swarm
+
+Mesoshpere+Marathon
+
+Kubernates
